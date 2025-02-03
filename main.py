@@ -24,7 +24,7 @@ class Destination(db.Model):
             "id": self.id,
             "destination" : self.destination,
             "country": self.country,
-            "rating": self.ratings
+            "rating": self.rating
         }
 
 #then rapid context
@@ -41,7 +41,7 @@ def home():
 @app.route("/destinations", methods=["GET"])
 def get_destinations():
     destinations = Destination.query.all()
-    return jsonify([destination.to_dict()] for destination in destinations)
+    return jsonify([destination.to_dict() for destination in destinations])
 
 @app.route("/destinations/<int:destination_id>", methods=["GET"])
 def get_destination(destination_id):
@@ -50,7 +50,8 @@ def get_destination(destination_id):
         return jsonify(destination.to_dict())
     else:
         return jsonify({"error": "destination not found"}), 404
-#send information to the api
+
+#method POST - send information to the api
 @app.route("/destinations", methods=["POST"])
 def add_destination():
     data = request.get_json()
@@ -62,7 +63,7 @@ def add_destination():
     db.session.add(new_destination)
     db.session.commit()
 
-    return jsonify(new_destination.to_dict()).201
+    return jsonify(new_destination.to_dict()),201
 
 #put -> update
 @app.route("/destinations/<int:destination_id>", methods=["PUT"])
@@ -71,11 +72,13 @@ def update_destination(destination_id):
 
     destination = Destination.query.get(destination_id)
     if destination:
+        #objeto.destino
         destination.destination = data.get("destination", destination.destination)
         destination.country = data.get("country", destination.country)
         destination.rating = data.get("rating", destination.rating)
-
+        #accedemos a la sesion actual y queremos confirmar los cambios actuales
         db.session.commit()
+        #devolvemos la version json
         return jsonify(destination.to_dict())
     else:
         return jsonify({"error": "destination not found!"}), 404
@@ -86,7 +89,12 @@ def update_destination(destination_id):
 def delete_destination(destination_id):
     destination = Destination.query.get(destination_id)
     if destination:
-        db.session
+        db.session.delete()
+        db.session.commit()
+
+        return jsonify({"message": "destination was deleted"})
+    else:
+        return jsonify({"error": "destination not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
